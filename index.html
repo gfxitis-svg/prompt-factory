@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Factory 10/10</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class'
+  }
+</script>
+<style>
+  /* Fade in animations */
+  .fade-in {
+    animation: fadeIn 0.4s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  /* Pulse hover for buttons */
+  .pulse-hover:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+</style>
+</head>
+<body class="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col items-center p-4">
+
+<div class="w-full max-w-3xl fade-in">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div class="flex items-center space-x-3">
+            <img src="https://img.icons8.com/external-kmg-design-basic-outline-kmg-design/64/000000/external-lightning-flash-weather-kmg-design-basic-outline-kmg-design.png" alt="Logo" class="w-10 h-10 dark:invert">
+            <h1 class="text-3xl font-extrabold">Prompt Factory <span class="text-blue-500">10/10</span></h1>
+        </div>
+        <button id="toggleDarkMode" class="px-3 py-1 rounded border border-gray-400 dark:border-gray-600 text-sm hover:bg-gray-200 dark:hover:bg-gray-800 transition">
+            🌙
+        </button>
+    </div>
+
+    <!-- Card -->
+    <div class="bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-xl p-6 space-y-4 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
+        
+        <!-- Inputs -->
+        <div>
+            <label class="font-semibold">Article Type</label>
+            <select id="articleType" class="w-full mt-1 p-2 rounded bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 transition-all focus:ring-2 focus:ring-blue-500">
+                <option>AUTHORITATIVE GUIDE</option>
+                <option>CASE STUDY</option>
+                <option>BUYER’S GUIDE</option>
+                <option>PRODUCT REVIEW</option>
+                <option>SEO-OPTIMIZED ARTICLE</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="font-semibold">Niche</label>
+            <select id="niche" class="w-full mt-1 p-2 rounded bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600">
+                <option>TECH</option>
+                <option>HEALTH & WELLNESS</option>
+                <option>FINANCE</option>
+                <option>TRAVEL</option>
+                <option>FOOD & COOKING</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="font-semibold">Tone</label>
+            <select id="tone" class="w-full mt-1 p-2 rounded bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600">
+                <option>AUTHORITATIVE</option>
+                <option>CONVERSATIONAL</option>
+                <option>PERSUASIVE</option>
+                <option>STORYTELLING</option>
+                <option>NEUTRAL/FACTUAL</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="font-semibold">Visual/Layout</label>
+            <select id="visual" class="w-full mt-1 p-2 rounded bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600">
+                <option>WORDPRESS</option>
+                <option>VISUALS</option>
+                <option>INFOGRAPHIC</option>
+                <option>ENGAGEMENT</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="font-semibold">Topic / Keyword</label>
+            <input type="text" id="topic" placeholder="e.g. Best laptops for graphic designers 2024" class="w-full mt-1 p-2 rounded bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600">
+        </div>
+
+        <!-- Generate Button -->
+        <button onclick="generatePrompt()" class="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg text-lg font-semibold transition pulse-hover">
+            🚀 Generate Prompt
+        </button>
+
+        <!-- Output -->
+        <div>
+            <label class="font-semibold">Final Prompt</label>
+            <textarea id="output" readonly class="w-full mt-1 p-3 rounded bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 h-72"></textarea>
+            
+            <div class="flex gap-3 mt-2">
+                <button id="copyBtn" onclick="copyPrompt()" class="flex-1 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg font-semibold transition pulse-hover">
+                    📋 Copy
+                </button>
+                <button onclick="downloadPrompt()" class="flex-1 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-lg font-semibold transition pulse-hover">
+                    📥 Download TXT
+                </button>
+            </div>
+            <p id="copyStatus" class="text-center text-sm mt-1 opacity-0 transition-opacity duration-300 text-green-500">Copied!</p>
+        </div>
+    </div>
+</div>
+
+<script>
+const articleTypeEl = document.getElementById('articleType');
+const nicheEl = document.getElementById('niche');
+const toneEl = document.getElementById('tone');
+const visualEl = document.getElementById('visual');
+const topicEl = document.getElementById('topic');
+const outputEl = document.getElementById('output');
+const copyStatusEl = document.getElementById('copyStatus');
+
+window.onload = () => {
+    if(localStorage.getItem('pf_articleType')) articleTypeEl.value = localStorage.getItem('pf_articleType');
+    if(localStorage.getItem('pf_niche')) nicheEl.value = localStorage.getItem('pf_niche');
+    if(localStorage.getItem('pf_tone')) toneEl.value = localStorage.getItem('pf_tone');
+    if(localStorage.getItem('pf_visual')) visualEl.value = localStorage.getItem('pf_visual');
+    if(localStorage.getItem('pf_topic')) topicEl.value = localStorage.getItem('pf_topic');
+};
+
+[articleTypeEl, nicheEl, toneEl, visualEl, topicEl].forEach(el => {
+    el.addEventListener('change', () => {
+        localStorage.setItem(`pf_${el.id}`, el.value);
+    });
+});
+
+function generatePrompt() {
+    const articleType = articleTypeEl.value;
+    const niche = nicheEl.value;
+    const tone = toneEl.value;
+    const visual = visualEl.value;
+    const topic = topicEl.value;
+
+    const prompt = `You are an expert ${tone.toLowerCase()} writer specializing in ${niche.toLowerCase()}. 
+Your task is to create a ${articleType.toLowerCase()} about "${topic}".
+
+Requirements:
+- Follow E.E.A.T principles with credible sources, recent data, and expert-level insights.
+- Structure with H2/H3 headings, bullet points, and clear flow.
+- Integrate SEO naturally: primary keyword "${topic}", semantic keywords, meta title & description, FAQs, and internal/external link suggestions.
+- Include engagement elements: hooks, polls, checklists, or interactive prompts.
+- Add ${visual} suggestions.
+
+Quality Control:
+After drafting, evaluate the content against this Rubrik:
+1. Accuracy & Credibility (10 pts)
+2. Depth & Expertise (10 pts)
+3. Clarity & Readability (10 pts)
+4. SEO Integration (10 pts)
+5. Engagement Hooks (10 pts)
+6. Originality (10 pts)
+7. Visual Integration (10 pts)
+8. Tone & Voice Consistency (10 pts)
+9. Actionability (10 pts)
+10. Conversion Potential (10 pts)
+
+Score each category out of 10. 
+If any category scores below 9, revise until all categories score 9 or 10.
+Output ONLY the final revised 10/10 version.`;
+
+    outputEl.value = prompt;
+}
+
+function copyPrompt() {
+    if (!outputEl.value) return;
+    navigator.clipboard.writeText(outputEl.value).then(() => {
+        copyStatusEl.style.opacity = 1;
+        setTimeout(() => {
+            copyStatusEl.style.opacity = 0;
+        }, 1500);
+    });
+}
+
+function downloadPrompt() {
+    if (!outputEl.value) return;
+    const blob = new Blob([outputEl.value], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'prompt.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+document.getElementById("toggleDarkMode").addEventListener("click", () => {
+    document.documentElement.classList.toggle("dark");
+});
+</script>
+
+</body>
+</html>
